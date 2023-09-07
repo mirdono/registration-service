@@ -2,6 +2,7 @@ require_relative '../lib/mu/auth-sudo'
 
 USERS_GRAPH = ENV['USERS_GRAPH'] || "http://mu.semte.ch/application"
 SESSIONS_GRAPH = ENV['SESSIONS_GRAPH'] || "http://mu.semte.ch/application"
+SERVERS_GRAPH = ENV['SERVERS_GRAPH'] || "http://mu.semte.ch/application"
 
 module RegistrationService
   module SparqlQueries
@@ -180,6 +181,17 @@ module RegistrationService
       query += "     <#{account_uri}> <#{MU_ACCOUNT.status}> <#{status_uri}> ;"
       query += "                      <#{RDF::Vocab::DC.modified}> #{now.sparql_escape} ."
       query += "   }"
+      query += " }"
+      Mu::AuthSudo.update(query)
+    end
+
+    def delete_accessible_servers(account_uri)
+      query =  " WITH <#{SERVERS_GRAPH}>"
+      query += " DELETE {"
+      query += "   ?server <#{MU_EXT.accessibleBy}> <#{account_uri}> ."
+      query += " }"
+      query += " WHERE {"
+      query += "   ?server <#{MU_EXT.accessibleBy}> <#{account_uri}> ."
       query += " }"
       Mu::AuthSudo.update(query)
     end

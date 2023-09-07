@@ -19,10 +19,24 @@ module RegistrationService
       account = result.first
 
       ###
+      # Remove server access
+      ###
+      delete_accessible_servers(account[:uri])
+
+      ###
+      # Remove public keys
+      ###
+      # TODO
+
+      ###
       # Update account status
       ###
-
       update_account_status(account[:uri], MU_ACCOUNT['status/inactive'])
+
+      ###
+      # Close session(s)
+      ###
+      # TODO
 
       status 204
     end
