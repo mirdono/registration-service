@@ -6,6 +6,22 @@ SESSIONS_GRAPH = ENV['SESSIONS_GRAPH'] || "http://mu.semte.ch/application"
 module RegistrationService
   module SparqlQueries
 
+    def select_account_id_and_role_by_session(session)
+      query =  " PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>"
+      query += " SELECT ?uuid ?session_role WHERE {"
+      query += "   GRAPH <#{SESSIONS_GRAPH}> {"
+      query += "     <#{session}> <#{MU_SESSION.account}> ?account ;"
+      query += "                  <#{MU_EXT.sessionRole}> ?session_role ."
+      query += "   }"
+      query += "   GRAPH <#{USERS_GRAPH}> {"
+      query += "     ?account <#{MU_CORE.uuid}> ?uuid ;"
+      query += "              a <#{RDF::Vocab::FOAF.OnlineAccount}> ."
+      query += "   }"
+      query += "   FILTER( ?session_role = \"administrator\" )"
+      query += " }"
+      Mu::AuthSudo.query(query)
+    end
+
     def create_user_and_account(user_id, name, account_id, nickname, hashed_password, account_salt)
       user_uri = create_user_uri(user_id)
       account_uri = create_account_uri(account_id)
@@ -24,7 +40,7 @@ module RegistrationService
       query += "                      <#{MU_CORE.uuid}> #{account_id.sparql_escape} ;"
       query += "                      <#{MU_ACCOUNT.password}> #{hashed_password.sparql_escape} ;"
       query += "                      <#{MU_ACCOUNT.salt}> #{account_salt.sparql_escape} ;"
-      query += "                      <#{MU_ACCOUNT.status}> <#{MU_ACCOUNT['status/active']}> ;"
+      query += "                      <#{MU_ACCOUNT.status}> <#{MU_ACCOUNT['status/created']}> ;"
       query += "                      <#{RDF::Vocab::DC.created}> #{now.sparql_escape} ;"
       query += "                      <#{RDF::Vocab::DC.modified}> #{now.sparql_escape} ."
       query += "   }"
@@ -53,11 +69,12 @@ module RegistrationService
       Mu::AuthSudo.query(query)
     end
 
-    def select_account_by_id(id, filter_active = true)
+    def select_account_by_id(id, filter_inactive = true)
       query =  " SELECT ?uri FROM <#{USERS_GRAPH}> WHERE {"
       query += "   ?uri a <#{RDF::Vocab::FOAF.OnlineAccount}> ;"
-      query += "          <#{MU_ACCOUNT.status}> <#{MU_ACCOUNT['status/active']}> ;" if filter_active
-      query += "          <#{MU_CORE.uuid}> #{id.sparql_escape} . "
+      query += "          <#{MU_CORE.uuid}> #{id.sparql_escape} ;"
+      query += "          <#{MU_ACCOUNT.status}> ?status ."
+      query += "    FILTER (?status IN (<#{MU_ACCOUNT['status/active']}>, <#{MU_ACCOUNT['status/created']}>))" if filter_inactive
       query += " }"
       Mu::AuthSudo.query(query)
     end

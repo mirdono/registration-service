@@ -35,7 +35,7 @@ post '/accounts/?' do
   # Validate request
   ###
   validate_json_api_content_type(request)
-  error('Id paramater is not allowed', 403) if not data['id'].nil?
+  error('Id parameter is not allowed', 403) if not data['id'].nil?
 
   session_uri = session_id_header(request)
   error('Session header is missing') if session_uri.nil?
@@ -44,6 +44,10 @@ post '/accounts/?' do
   error('X-Rewrite-URL header is missing') if rewrite_url.nil?
 
   validate_resource_type('accounts', data)
+
+  # Check whether request is from an administrator
+  result = select_account_id_and_role_by_session(session_uri)
+  error('Only administrators can create new user accounts') if result.empty?
 
   error('Nickname might not be blank') if attributes['nickname'].nil? or attributes['nickname'].empty?
 
