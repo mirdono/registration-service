@@ -151,6 +151,21 @@ end
 delete '/accounts/:id/?' do
   content_type 'application/vnd.api+json'
 
+  ###
+  # Validate request
+  ###
+  validate_json_api_content_type(request)
+  error('Id parameter is not allowed', 403) if not data['id'].nil?
+
+  session_uri = session_id_header(request)
+  error('Session header is missing') if session_uri.nil?
+
+  ###
+  # Validate session
+  ###
+  result = select_account_id_and_role_by_session(session_uri)
+  error('Only administrators can delete other user\'s accounts') if result.empty?
+
   delete_account(params['id'])
 end
 
@@ -173,6 +188,20 @@ patch '/accounts/:id/?' do
   data = @json_body['data']
   attributes = data['attributes']
 
+  ###
+  # Validate request
+  ###
+  validate_json_api_content_type(request)
+  error('Id parameter is not allowed', 403) if not data['id'].nil?
+
+  session_uri = session_id_header(request)
+  error('Session header is missing') if session_uri.nil?
+
+  ###
+  # Validate session
+  ###
+  result = select_account_id_and_role_by_session(session_uri)
+  error('Only administrators can modify other user\'s accounts') if result.empty?
 
   ###
   # Validate body
