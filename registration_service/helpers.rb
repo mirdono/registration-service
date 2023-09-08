@@ -2,7 +2,7 @@ module RegistrationService
   module Helpers
 
     def create_user_uri(user_id)
-      REGISTRATION_SERVICE_RESOURCE_BASE + "users/" + user_id
+      REGISTRATION_SERVICE_RESOURCE_BASE + "people/" + user_id
     end
 
     def create_account_uri(account_id)

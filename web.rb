@@ -14,7 +14,8 @@ end
 
 MU_ACCOUNT = RDF::Vocabulary.new(MU.to_uri.to_s + 'account/')
 MU_SESSION = RDF::Vocabulary.new(MU.to_uri.to_s + 'session/')
-REGISTRATION_SERVICE_RESOURCE_BASE = SERVICE_RESOURCE_BASE + 'registration-service/'
+REGISTRATION_SERVICE_RESOURCE_BASE = 'http://ext.data.gift/'
+  # SERVICE_RESOURCE_BASE + 'registration-service/'
 
 ###
 # POST /accounts
