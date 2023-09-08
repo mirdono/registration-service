@@ -303,6 +303,10 @@ patch '/accounts/current/changePassword/?' do
   hashed_password = BCrypt::Password.create attributes['new-password'] + settings.salt + account_salt
   update_password(account[:uri], hashed_password, account_salt)
 
+  ###
+  # Activate account (if necessary)
+  ###
+  update_account_status(account[:uri], "#{MU_ACCOUNT['status/active']}")
 
   status 204
 
